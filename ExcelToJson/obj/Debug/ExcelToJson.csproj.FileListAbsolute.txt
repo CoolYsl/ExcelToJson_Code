@@ -1,0 +1,15 @@
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\ExcelToJson.csprojAssemblyReference.cache
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\MainWindow.g.cs
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\App.g.cs
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\ExcelToJson_MarkupCompile.cache
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\ExcelToJson_MarkupCompile.lref
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\bin\Debug\ExcelToJson.exe.config
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\bin\Debug\ExcelToJson.exe
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\bin\Debug\ExcelToJson.pdb
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\MainWindow.baml
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\ExcelToJson.g.resources
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\ExcelToJson.Properties.Resources.resources
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\ExcelToJson.csproj.GenerateResource.cache
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\ExcelToJson.csproj.CoreCompileInputs.cache
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\ExcelToJson.exe
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\Debug\ExcelToJson.pdb

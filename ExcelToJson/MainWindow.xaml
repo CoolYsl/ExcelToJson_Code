@@ -1,0 +1,36 @@
+﻿<Window x:Class="ExcelToJson.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ExcelToJson"
+        mc:Ignorable="d"
+        Title="ExcelToJson" Height="350" Width="620" Background="White" MinWidth="620" MinHeight="350">
+    <Grid Margin="0,0,2,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Button Content="选择" HorizontalAlignment="Left" Margin="503,26,0,0" VerticalAlignment="Top" Width="82" Click="Button_Click" Height="23"/>
+        <TextBox x:Name="SrcPath" HorizontalAlignment="Left" Height="23" Margin="94,26,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="404" TextChanged="SrcPath_TextChanged" />
+        <TextBlock x:Name="SrcText" HorizontalAlignment="Left" Margin="21,27,0,0" TextWrapping="Wrap" Text="源文件夹：" VerticalAlignment="Top" Height="23" IsEnabled="False" TextAlignment="Center" Cursor="None"/>
+        <Button Content="选择" HorizontalAlignment="Left" Margin="503,54,0,0" VerticalAlignment="Top" Width="82" Click="Button_Click_1" Height="23"/>
+        <TextBox x:Name="TargetPath" HorizontalAlignment="Left" Height="23" Margin="94,54,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="404" TextChanged="TargetPath_TextChanged" />
+        <TextBlock x:Name="TargetText" HorizontalAlignment="Left" Margin="21,54,0,0" TextWrapping="Wrap" Text="目标文件夹：" VerticalAlignment="Top" Height="23" IsEnabled="False" TextAlignment="Center" Cursor="None"/>
+        <ListView x:Name="LogList" HorizontalAlignment="Left" Height="165" Margin="21,94,0,0" VerticalAlignment="Top" Width="477" Background="#FFE2E1E1">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Excel文件" Width="467"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button x:Name="ConfirmButton" Content="一键转换" HorizontalAlignment="Left" Margin="505,192,0,0" VerticalAlignment="Top" Width="80" Height="67" FontSize="14" Click="ConfirmButton_Click"/>
+        <CheckBox x:Name="IsAllWorkBookCheckBox" Content="所有工作簿&#xD;&#xA;" HorizontalAlignment="Left" Margin="505,94,0,0" VerticalAlignment="Top" IsChecked="True" Height="24"/>
+        <TextBox x:Name="LogText" HorizontalAlignment="Left" Height="33" Margin="21,276,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="557" Foreground="Red" SelectionBrush="White" BorderBrush="White" IsEnabled="False"/>
+        <ComboBox x:Name="TransformTypeCombo" HorizontalAlignment="Left" Margin="505,123,0,0" VerticalAlignment="Top" Width="80" SelectedIndex="0" Height="24">
+            <ListBoxItem Content="转为数组"/>
+            <ListBoxItem Content="转为对象"/>
+        </ComboBox>
+        <CheckBox x:Name="CreatCPPCode" Content="生成CPP" HorizontalAlignment="Left" Margin="505,152,0,0" VerticalAlignment="Top" Width="80" IsChecked="True"/>
+        <CheckBox x:Name="CreatCSharpCode" Content="生成C#" HorizontalAlignment="Left" Margin="505,172,0,0" VerticalAlignment="Top" Width="80" IsChecked="True"/>
+    </Grid>
+</Window>
