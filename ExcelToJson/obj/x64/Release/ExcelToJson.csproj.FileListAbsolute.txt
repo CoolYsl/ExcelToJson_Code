@@ -23,3 +23,4 @@ C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.csproj.CopyComplete
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.exe
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.pdb
+C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.csprojAssemblyReference.cache
