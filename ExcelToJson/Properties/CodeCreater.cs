@@ -176,6 +176,12 @@ namespace ExcelToJson.Properties
 			hsb.AppendLine("\tJsonReader();");
 			hsb.AppendLine("\t~JsonReader();");
 			hsb.AppendLine("\tvoid LoadAll();");
+			hsb.AppendLine("public:");
+			foreach (var name in SheetNames)
+			{
+				hsb.AppendLine("\tstd::vector <" + name + "> Get" + name + "();");
+			}
+			hsb.AppendLine();
 			hsb.AppendLine("private:");
 			foreach(var name in SheetNames)
 			{
@@ -246,6 +252,13 @@ namespace ExcelToJson.Properties
 			}
 			cppsb.AppendLine("}");
 			cppsb.AppendLine("");
+			foreach (var name in SheetNames)
+			{
+				cppsb.AppendLine("std::vector <" + name + "> JsonReader::Get" + name + "()");
+				cppsb.AppendLine("{");
+				cppsb.AppendLine("\treturn vec" + name + ";");
+				cppsb.AppendLine("}\n");
+			}
 			foreach (var name in SheetNames)
 			{
 				cppsb.AppendLine("void JsonReader::Load" + name + "()");
