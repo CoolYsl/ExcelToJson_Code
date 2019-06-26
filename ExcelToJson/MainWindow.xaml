@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ExcelToJson"
         mc:Ignorable="d"
-        Title="ExcelToJson" Height="350" Width="620" Background="White" MinWidth="620" MinHeight="350">
+        Title="ExcelToJson" Height="398" Width="620" Background="White" MinWidth="620" MinHeight="350">
     <Grid Margin="0,0,2,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -25,7 +25,7 @@
         </ListView>
         <Button x:Name="ConfirmButton" Content="一键转换" HorizontalAlignment="Left" Margin="505,192,0,0" VerticalAlignment="Top" Width="80" Height="67" FontSize="14" Click="ConfirmButton_Click"/>
         <CheckBox x:Name="IsAllWorkBookCheckBox" Content="所有工作簿&#xD;&#xA;" HorizontalAlignment="Left" Margin="505,94,0,0" VerticalAlignment="Top" IsChecked="True" Height="24"/>
-        <TextBox x:Name="LogText" HorizontalAlignment="Left" Height="33" Margin="21,276,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="557" Foreground="Red" SelectionBrush="White" BorderBrush="White" IsEnabled="False"/>
+        <TextBox x:Name="LogText" HorizontalAlignment="Left" Height="81" Margin="21,276,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="557" Foreground="Red" SelectionBrush="White" BorderBrush="White" IsEnabled="False"/>
         <ComboBox x:Name="TransformTypeCombo" HorizontalAlignment="Left" Margin="505,123,0,0" VerticalAlignment="Top" Width="80" SelectedIndex="0" Height="24">
             <ListBoxItem Content="转为数组"/>
             <ListBoxItem Content="转为对象"/>

@@ -28,7 +28,8 @@ namespace ExcelToJson.Properties
         public const string _namespace = "JsonReadObject";
         public abstract void ObjCodeCreat(List<DataTable> validSheets);
 		public abstract void JsonReaderCodeCreat(List<DataTable> validSheets);
-        public virtual void SaveObjCodeToFile(Encoding encoding)
+		public abstract void SkillCodeCreat(List<DataTable> validSheets);
+		public virtual void SaveObjCodeToFile(Encoding encoding)
         {
             try
             {
@@ -124,8 +125,11 @@ namespace ExcelToJson.Properties
                 throw ex;
             }
         }
-        
-    }
+
+		public override void SkillCodeCreat(List<DataTable> validSheets)
+		{
+		}
+	}
     class CPPCodeCreater :ACodeCreater
     {
 		private StringBuilder hsb = new StringBuilder();
@@ -134,27 +138,22 @@ namespace ExcelToJson.Properties
         {
             Suffix = ".h";
         }
-		private void SaveJsonReaderToFile()
+		private void SaveToFile(StringBuilder sb, string dic,string filename)
 		{
 			Encoding utf8 = new UTF8Encoding(false);
 			try
 			{
-				if (!Directory.Exists(FilePath))
+				if (!Directory.Exists(FilePath+@"\"+dic))
 				{
-					Directory.CreateDirectory(FilePath);
+					Directory.CreateDirectory(FilePath + @"\" + dic);
 				}
-				using (FileStream file = new FileStream(FilePath + @"\JsonReader"  + Suffix, FileMode.Create, FileAccess.Write))
-				{
-					using (TextWriter writer = new StreamWriter(file, utf8))
-						writer.Write(hsb.ToString());
-				}
-				using (FileStream file = new FileStream(FilePath + @"\JsonReader.cpp", FileMode.Create, FileAccess.Write))
+				using (FileStream file = new FileStream(FilePath+@"\"+dic + @filename, FileMode.Create, FileAccess.Write))
 				{
 					using (TextWriter writer = new StreamWriter(file, utf8))
-						writer.Write(cppsb.ToString());
+						writer.Write(sb.ToString());
 				}
-				hsb.Clear();
-				cppsb.Clear();
+				
+				sb.Clear();
 			}
 			catch (Exception ex)
 			{
@@ -179,7 +178,7 @@ namespace ExcelToJson.Properties
 			hsb.AppendLine("public:");
 			foreach (var name in SheetNames)
 			{
-				hsb.AppendLine("\tstd::vector <" + name + "> Get" + name + "();");
+				hsb.AppendLine("\tconst std::vector <" + name + ">& Get" + name + "()const;");
 			}
 			hsb.AppendLine();
 			hsb.AppendLine("private:");
@@ -254,7 +253,7 @@ namespace ExcelToJson.Properties
 			cppsb.AppendLine("");
 			foreach (var name in SheetNames)
 			{
-				cppsb.AppendLine("std::vector <" + name + "> JsonReader::Get" + name + "()");
+				cppsb.AppendLine("const std::vector <" + name + ">& JsonReader::Get" + name + "()const");
 				cppsb.AppendLine("{");
 				cppsb.AppendLine("\treturn vec" + name + ";");
 				cppsb.AppendLine("}\n");
@@ -304,7 +303,8 @@ namespace ExcelToJson.Properties
 		{
 			CreatheaderFile();
 			CreatCppFile(validSheets);
-			SaveJsonReaderToFile();
+			SaveToFile(hsb, "",@"\JsonReader.h");
+			SaveToFile(cppsb,"", @"\JsonReader.cpp");
 		}
 
 		public override void ObjCodeCreat(List<DataTable> validSheets)
@@ -312,7 +312,9 @@ namespace ExcelToJson.Properties
             try
             {
                 sbObj.Clear();
-                sbObj.AppendLine("namespace " + ACodeCreater._namespace);
+				sbObj.AppendLine("#include \"DataFormat.h\"");
+				sbObj.AppendLine("typedef uint32 uint;");
+				sbObj.AppendLine("namespace " + ACodeCreater._namespace);
                 sbObj.AppendLine("{");
                 
                 //遍历Sheet
@@ -356,8 +358,285 @@ namespace ExcelToJson.Properties
                 throw new Exception("CSharpCodeCreater.CodeCreat Default!");
             }
         }
-       
-    }
+
+		public override void SkillCodeCreat(List<DataTable> validSheets)
+		{
+			try
+			{
+
+			
+			//查询技能表
+			List<DataTable> skillsconf = new List<DataTable>();
+			foreach (var sheet in validSheets)
+			{
+				if(sheet.TableName.Contains("Skill_"))
+				{
+					skillsconf.Add(sheet);
+				}
+			}
+			if(skillsconf.Count == 0)
+			{
+				return;
+			}
+
+			//判断重复字段
+			Dictionary<string, Dictionary<string, string>> fieldAndType = new Dictionary<string, Dictionary<string, string>>();
+			Dictionary<string, int> fieldNameCount = new Dictionary<string, int>();
+			foreach (var sheet in skillsconf)
+			{
+				int col = 0;
+				string skillname = sheet.TableName.Replace("Conf", "");
+				fieldAndType[skillname] = new Dictionary<string, string>();
+				foreach (DataColumn column in sheet.Columns)
+				{
+					//字段名
+					string fieldName = column.ToString();
+					if (string.IsNullOrEmpty(fieldName))
+					{
+						fieldName = string.Format("col_{0}", col);
+						col++;
+					}
+					//字段类型
+					DataRow row = sheet.Rows[0];
+					string fieldType = row[column].ToString();
+					if (!fieldNameCount.ContainsKey(fieldName))
+					{
+						fieldNameCount[fieldName] = 1;
+					}
+					else
+					{
+						fieldNameCount[fieldName] += 1;
+					}
+
+					fieldAndType[sheet.TableName.Replace("Conf","")][fieldName] = fieldType;
+				}
+
+			}
+			Dictionary<string, string> repeatfieldType = new Dictionary<string, string>();
+			//重复的字段找出来写入基类
+			foreach (var rep in fieldNameCount)
+			{
+				if (rep.Value == skillsconf.Count)
+				{
+					repeatfieldType[rep.Key] = fieldAndType[skillsconf[0].TableName.Replace("Conf","")][rep.Key];
+					foreach(var skill in fieldAndType)
+					{
+						skill.Value.Remove(rep.Key);
+					}
+				}
+			}
+				CreatSkillBaseClass(repeatfieldType);
+				CreatSkillClass(fieldAndType);
+			}
+			catch
+			{
+				throw (new Exception("读取数据错误"));
+			}
+
+		}
+		#region//创建技能类
+		private void CreatSkillClass(Dictionary<string, Dictionary<string, string>> fieldAndType)
+		{
+			StringBuilder sb = new StringBuilder();
+			foreach (var skill in fieldAndType)
+			{
+				CreatSkillHeaderFile(skill.Key, skill.Value, sb);
+				SaveToFile(sb, "CPP", @"\" + skill.Key + ".h");
+				CreatSkillCppFile(skill.Key, skill.Value, sb);
+				SaveToFile(sb, "CPP", @"\" + skill.Key + ".cpp");
+			}
+		}
+		private void CreatSkillHeaderFile(string skillName, Dictionary<string, string> fieldAndType, StringBuilder sb)
+		{
+			sb.Clear();
+			sb.AppendLine("#pragma once");
+			sb.AppendLine("#include \"BaseSkill.h\"");
+			sb.AppendLine("class " + skillName + ":public BaseSkill");
+			sb.AppendLine("{");
+			sb.AppendLine("public:");
+			sb.AppendLine("\t" + skillName + "();");
+			sb.AppendLine("\tvirtual ~" + skillName + "();");
+			sb.AppendLine("\tvirtual bool Release();");
+			sb.AppendLine("\tvirtual bool Init(int level);\n");
+			sb.AppendLine("public:");
+
+			foreach (var field in fieldAndType)
+			{
+				if (field.Value.Equals("string"))
+				{
+					sb.AppendLine("\tconst string& Get" + field.Key + "()const;");
+				}
+				else
+				{
+					sb.AppendLine("\t" + field.Value + " Get" + field.Key + "()const;");
+				}
+			}
+			sb.AppendLine("\nprotected:");
+			foreach (var field in fieldAndType)
+			{
+				if (field.Value.Equals("string"))
+				{
+					sb.AppendLine("\tvoid Set" + field.Key + "(const string& value);");
+				}
+				else
+				{
+					sb.AppendLine("\tvoid Set" + field.Key + "(" + field.Value + " value);");
+				}
+			}
+			sb.AppendLine("\nprivate:");
+			foreach (var field in fieldAndType)
+			{
+				sb.AppendLine("\t" + field.Value + " " + field.Key + ";");
+			}
+			sb.AppendLine("};");
+		}
+		private void CreatSkillCppFile(string skillName, Dictionary<string, string> fieldAndType, StringBuilder sb)
+		{
+			sb.Clear();
+			sb.AppendLine("#include \""+ skillName + ".h\"");
+			sb.AppendLine("#include \"DaMenPai.cpp\"\n");
+			sb.AppendLine(skillName+"::"+ skillName+"()");
+			sb.AppendLine("{\n");
+			sb.AppendLine("}\n");
+			sb.AppendLine(skillName + "::~" + skillName + "()");
+			sb.AppendLine("{\n");
+			sb.AppendLine("}\n");
+			sb.AppendLine("bool "+skillName + "::Release()");
+			sb.AppendLine("{\n");
+			sb.AppendLine("}\n");
+			sb.AppendLine("bool "+ skillName+"::Init(int level)");
+			sb.AppendLine("{\n");
+			sb.AppendLine("\tauto confVec = g_pJsonReader->Get" + skillName + "Conf();\n");
+			sb.AppendLine("\tfor (auto it : confVec)");
+			sb.AppendLine("\t{");
+			sb.AppendLine("\t\tif (it.Level)");
+			sb.AppendLine("\t\t{");
+			foreach (var field in fieldAndType)
+			{
+				
+				sb.AppendLine("\t\t\tSet" + field.Key + "(it." + field.Key + ");");
+				
+			}
+			sb.AppendLine("\t\t\treturn true;");
+			sb.AppendLine("\t\t}");
+			sb.AppendLine("\t}");
+			sb.AppendLine("\treturn false;");
+			sb.AppendLine("}\n");
+			foreach (var field in fieldAndType)
+			{
+				sb.AppendLine(field.Value + " " + skillName + "::Get" + field.Key + "()const");
+				sb.AppendLine("{");
+				sb.AppendLine("\treturn " + field.Key + ";");
+				sb.AppendLine("}");
+			}
+			foreach (var field in fieldAndType)
+			{
+				sb.AppendLine("void " + skillName + "::Set" + field.Key + "(" + field.Value + " value)");
+				sb.AppendLine("{");
+				sb.AppendLine("\t" + field.Key + "= value;");
+				sb.AppendLine("}");
+			}
+		}
+		#endregion
+		#region//创建技能基类
+		private void CreatSkillBaseClass(Dictionary<string, string> repeatfieldType)
+		{
+			StringBuilder sb = new StringBuilder();
+			CreatSkillBaseHeaderFile(repeatfieldType, sb);
+			SaveToFile(sb, "CPP", @"\BaseSkill.h");
+			CreatSkillBaseCppFile(repeatfieldType, sb);
+			SaveToFile(sb, "CPP", @"\BaseSkill.cpp");
+			
+		}
+		private void CreatSkillBaseHeaderFile(Dictionary<string, string> repeatfieldType, StringBuilder sb)
+		{
+			sb.Clear();
+			sb.AppendLine("#pragma once");
+			sb.AppendLine("#include \"DataFormat.h\"\n");
+			sb.AppendLine("typedef uint32 uint;");
+			sb.AppendLine("class BaseSkill");
+			sb.AppendLine("{");
+			sb.AppendLine("public:");
+			sb.AppendLine("\tBaseSkill();");
+			sb.AppendLine("\tvirtual ~BaseSkill();\n");
+			sb.AppendLine("public:");
+			foreach (var field in repeatfieldType)
+			{
+				if (field.Value.Equals("string"))
+				{
+					sb.AppendLine("\tconst string& Get" + field.Key + "()const;");
+				}
+				else
+				{
+					sb.AppendLine("\t" + field.Value + " Get" + field.Key + "()const;");
+				}
+			}
+			sb.AppendLine("\tvirtual bool Release() = 0;");
+			sb.AppendLine("\tvirtual bool Init(int level) = 0;\n");
+			sb.AppendLine("protected:");
+			foreach (var field in repeatfieldType)
+			{
+				if (field.Value.Equals("string"))
+				{
+					sb.AppendLine("\tvoid Set" + field.Key + "(const string& value);");
+				}
+				else
+				{
+					sb.AppendLine("\tvoid Set" + field.Key + "(" + field.Value + " value);");
+				}
+			}
+			sb.AppendLine();
+			sb.AppendLine("private:");
+			foreach (var field in repeatfieldType)
+			{
+				sb.AppendLine("\t" + field.Value + " " + field.Key + ";");
+			}
+			sb.AppendLine("};");
+		}
+		private void CreatSkillBaseCppFile(Dictionary<string, string> repeatfieldType, StringBuilder sb)
+		{
+			sb.Clear();
+			sb.AppendLine("#include \"BaseSkill.h\"\n");
+			sb.AppendLine("BaseSkill::BaseSkill()");
+			sb.AppendLine("{\n");
+			sb.AppendLine("}\n");
+			sb.AppendLine("BaseSkill::~BaseSkill()");
+			sb.AppendLine("{\n");
+			sb.AppendLine("}\n");
+
+			//Get方法
+			foreach (var field in repeatfieldType)
+			{
+				if (field.Value.Equals("string"))
+				{
+					sb.AppendLine("const std::string& BaseSkill::Get" + field.Key + "()const");
+				}
+				else
+				{
+					sb.AppendLine(field.Value + " BaseSkill::Get" + field.Key + "()const");
+				}
+				sb.AppendLine("{\n");
+				sb.AppendLine("\treturn " + field.Key + ";");
+				sb.AppendLine("}\n");
+			}
+			//Set方法
+			foreach (var field in repeatfieldType)
+			{
+				if (field.Value.Equals("string"))
+				{
+					sb.AppendLine("void BaseSkill::Set" + field.Key + "(const string& value)");
+				}
+				else
+				{
+					sb.AppendLine("void BaseSkill::Set"  + field.Key + "("+field.Value +" value)");
+				}
+				sb.AppendLine("{\n");
+				sb.AppendLine("\t " + field.Key + " = value;");
+				sb.AppendLine("}\n");
+			}
+		}
+		#endregion
+	}
     public class CodeCreaterManager
     {
         public List<ACodeCreater> CodeCreater;
@@ -368,7 +647,6 @@ namespace ExcelToJson.Properties
             FilePath = filepath;
             encoding = en;
             CodeCreater = new List<ACodeCreater>();
-            
         }
         public void AddCreatCodeType( CreateType type)
         {
@@ -399,12 +677,14 @@ namespace ExcelToJson.Properties
 					}
 
                 }
+				//生成各种代码
                 foreach (var item in CodeCreater)
                 {
 					item.InitSheetName(validSheets);
                     item.ObjCodeCreat(validSheets);
 					item.JsonReaderCodeCreat(validSheets);
-                    item.SaveObjCodeToFile(encoding);
+					item.SkillCodeCreat(validSheets);
+					item.SaveObjCodeToFile(encoding);
                 }
             }
             catch(Exception ex)
