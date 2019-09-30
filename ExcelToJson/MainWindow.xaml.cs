@@ -25,7 +25,8 @@ namespace ExcelToJson
         public MainWindow()
         {
             InitializeComponent();
-            SrcPath.Text = Directory.GetCurrentDirectory();
+            SrcPath.Text = @"C:\Users\Admin\Desktop\Conf";
+			TargetPath.Text = @"C:\Users\Admin\Desktop\Conf\Conf";
 
 		}
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -185,16 +186,17 @@ namespace ExcelToJson
         //写为Json
         private void WriteJson(DataSet ds)
         {
-            Encoding utf8 = new UTF8Encoding(false);
+			Encoding unicode = new UTF8Encoding(true);
             bool isArray = TransformTypeCombo.SelectedIndex == 0 ? true : false;
-            var jsonExprter = new JsonExporter(ds, false, isArray, "yyyy/MM/dd", TargetPath.Text, utf8);
+            var jsonExprter = new JsonExporter(ds, false, isArray, "yyyy/MM/dd", TargetPath.Text, unicode);
         }
         //写为代码
         private void WriteCode(DataSet ds)
         {
-            Encoding utf8 = new UTF8Encoding(false);
-            string path = TargetPath.Text + @"\Code";
-            CodeCreaterManager codeCreatmanager = new CodeCreaterManager(path,utf8);
+            Encoding unicode = new UTF8Encoding(true);
+
+			string path = TargetPath.Text + @"\Code";
+            CodeCreaterManager codeCreatmanager = new CodeCreaterManager(path, unicode);
             if((bool)CreatCPPCode.IsChecked)
             {
 				Stopwatch sw = new Stopwatch();

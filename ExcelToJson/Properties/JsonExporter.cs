@@ -153,7 +153,6 @@ namespace ExcelToJson
                     { 
                         value = (int)num;
                     }
-
                 }
 
                 string fieldName = column.ToString();
