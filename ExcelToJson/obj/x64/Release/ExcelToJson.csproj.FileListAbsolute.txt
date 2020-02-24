@@ -19,7 +19,6 @@ C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\MainWindow.b
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.g.resources
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.Properties.Resources.resources
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.csproj.GenerateResource.cache
-C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.csproj.CoreCompileInputs.cache
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.csproj.CopyComplete
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.exe
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Release\ExcelToJson.pdb

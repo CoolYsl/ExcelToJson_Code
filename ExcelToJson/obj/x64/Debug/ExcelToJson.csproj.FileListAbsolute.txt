@@ -10,7 +10,6 @@ C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Debug\MainWindow.bam
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Debug\ExcelToJson.g.resources
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Debug\ExcelToJson.Properties.Resources.resources
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Debug\ExcelToJson.csproj.GenerateResource.cache
-C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Debug\ExcelToJson.csproj.CoreCompileInputs.cache
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Debug\ExcelToJson.exe
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\obj\x64\Debug\ExcelToJson.pdb
 C:\Users\Admin\source\repos\ExcelToJson\ExcelToJson\bin\x64\Debug\LitJson.dll

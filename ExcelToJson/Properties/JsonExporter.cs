@@ -14,7 +14,6 @@ namespace ExcelToJson
     class JsonExporter {
         string mContext = "";
         public string FilePath;
-        public Encoding encoding;
         public string context {
             get {
                 return mContext;
@@ -25,10 +24,9 @@ namespace ExcelToJson
         /// 构造函数：完成内部数据创建
         /// </summary>
         /// <param name="excel">ExcelLoader Object</param>
-        public JsonExporter(DataSet dataSet, bool lowcase, bool exportArray, string dateFormat,string filepath,Encoding en) {
+        public JsonExporter(DataSet dataSet, bool lowcase, bool exportArray, string dateFormat,string filepath) {
 
             FilePath = filepath;
-            encoding = en;
             List<DataTable> validSheets = new List<DataTable>();
             for (int i = 0; i < dataSet.Tables.Count; i++) {
                 DataTable sheet = dataSet.Tables[i];
@@ -78,11 +76,12 @@ namespace ExcelToJson
             List<object> values = new List<object>();
 
             int firstDataRow = 2;
+            DataRow headRow = sheet.Rows[0];
             for (int i = firstDataRow; i < sheet.Rows.Count; i++) {
                 DataRow row = sheet.Rows[i];
 
                 values.Add(
-                    convertRowToDict(sheet, row, lowcase, firstDataRow)
+                    convertRowToDict(sheet, row, lowcase, firstDataRow, headRow)
                     );
             }
 
@@ -97,13 +96,14 @@ namespace ExcelToJson
                 new Dictionary<string, object>();
 
             int firstDataRow = 2;
+            DataRow headRow = sheet.Rows[0];
             for (int i = firstDataRow; i < sheet.Rows.Count; i++) {
                 DataRow row = sheet.Rows[i];
                 string ID = row[sheet.Columns[0]].ToString();
                 if (ID.Length <= 0)
                     ID = string.Format("row_{0}", i);
 
-                var rowObject = convertRowToDict(sheet, row, lowcase, firstDataRow);
+                var rowObject = convertRowToDict(sheet, row, lowcase, firstDataRow, headRow);
                 //rowObject[ID] = ID;
                 importData[ID] = rowObject;
             }
@@ -114,12 +114,12 @@ namespace ExcelToJson
         /// <summary>
         /// 把一行数据转换成一个对象，每一列是一个属性
         /// </summary>
-        private Dictionary<string, object> convertRowToDict(DataTable sheet, DataRow row, bool lowcase, int firstDataRow) {
+        private Dictionary<string, object> convertRowToDict(DataTable sheet, DataRow row, bool lowcase, int firstDataRow,DataRow headRow) {
             var rowData = new Dictionary<string, object>();
             int col = 1;
             foreach (DataColumn column in sheet.Columns) {
                 object value = row[column];
-
+                string type = headRow[column] as string;
                 if (value.GetType() == typeof(DBNull)) {
                     value = getColumnDefault(sheet, column, firstDataRow);
                 }
@@ -127,24 +127,25 @@ namespace ExcelToJson
 					string str = value as string;
 					int tmpInt;
                     double tmpDouble;
-					if(str.Substring(str.Length-1,1).Equals("%"))
-					{
-						
-					}
-					if (int.TryParse(str, out tmpInt))
-					{
-						value = tmpInt;
-					}
-					else if (str.Substring(str.Length - 1, 1).Equals("%"))
+                    if (str.Substring(str.Length - 1, 1).Equals("%") )
 					{
 						str = str.Substring(0, str.Length - 1);
 						if (Double.TryParse(str, out tmpDouble))
-							value = tmpDouble*0.01;
+							value = tmpDouble * 0.01;
 					}
-					else if (Double.TryParse(str, out tmpDouble))
-						value = tmpDouble;
-
-
+					else if (!type.Equals("string"))
+                    {
+                        if (type.Equals("int")|| type.Equals("uint"))
+                        {
+                            int.TryParse(str, out tmpInt);
+                            value = tmpInt;
+                        }
+						else if (type.Equals("double")|| type.Equals("float"))
+                        {
+                            Double.TryParse(str, out tmpDouble);
+                            value = tmpDouble;
+                        }
+					}
 				}
                 else if(value.GetType() == typeof(double))
                 {
@@ -191,11 +192,26 @@ namespace ExcelToJson
         /// </summary>
         /// <param name="jsonPath">输出文件路径</param>
         public void SaveToFile(string fileName) {
-            //-- 保存文件
-            using (FileStream file = new FileStream(FilePath + @"\" + fileName + ".json", FileMode.Create, FileAccess.Write)) {
-                using (TextWriter writer = new StreamWriter(file, encoding))
+			//-- 保存文件
+			Encoding unicode = new UTF8Encoding(true);
+			if (!Directory.Exists(FilePath + @"\CPPConf_bom\"))
+			{
+				Directory.CreateDirectory(FilePath + @"\CPPConf_bom\");
+			}
+			using (FileStream file = new FileStream(FilePath + @"\CPPConf_bom\" + fileName + ".json", FileMode.Create, FileAccess.Write)) {
+                using (TextWriter writer = new StreamWriter(file, unicode))
                     writer.Write(mContext);
             }
-        }
+			Encoding unicode_nobom = new UTF8Encoding(false);
+			if (!Directory.Exists(FilePath + @"\CSharpConf_nobom\"))
+			{
+				Directory.CreateDirectory(FilePath + @"\CSharpConf_nobom\");
+			}
+			using (FileStream file = new FileStream(FilePath + @"\CSharpConf_nobom\" + fileName + ".json", FileMode.Create, FileAccess.Write))
+			{
+				using (TextWriter writer = new StreamWriter(file, unicode_nobom))
+					writer.Write(mContext);
+			}
+		}
     }
 }

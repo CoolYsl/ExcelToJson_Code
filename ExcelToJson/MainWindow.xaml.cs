@@ -186,9 +186,8 @@ namespace ExcelToJson
         //写为Json
         private void WriteJson(DataSet ds)
         {
-			Encoding unicode = new UTF8Encoding(true);
             bool isArray = TransformTypeCombo.SelectedIndex == 0 ? true : false;
-            var jsonExprter = new JsonExporter(ds, false, isArray, "yyyy/MM/dd", TargetPath.Text, unicode);
+            var jsonExprter = new JsonExporter(ds, false, isArray, "yyyy/MM/dd", TargetPath.Text);
         }
         //写为代码
         private void WriteCode(DataSet ds)

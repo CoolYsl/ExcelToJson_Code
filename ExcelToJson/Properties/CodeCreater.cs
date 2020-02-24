@@ -149,7 +149,7 @@ namespace ExcelToJson.Properties
 		}
 		private void SaveToFile(StringBuilder sb, string dic, string filename)
 		{
-			Encoding utf8 = new UTF8Encoding(true);
+			Encoding utf8 = new UTF8Encoding(false);
 			try
 			{
 				if (!Directory.Exists(FilePath + @"\" + dic))
@@ -186,7 +186,9 @@ namespace ExcelToJson.Properties
 			hsb.AppendLine("public:");
 			foreach (var name in SheetNames)
 			{
-				hsb.AppendLine("\tconst std::vector <" + name + ">& Get" + name + "()const;");
+				hsb.AppendLine("\tconst " + name + "* Get" + name + "Last()const;");
+				hsb.AppendLine("\tconst std::vector<" + name + ">& Get" + name + "Vec()const;");
+				hsb.AppendLine("\tconst " + name + "* Get"+ name +"(std::function<bool(const " + name + "&)>)const;");
 			}
 			hsb.AppendLine();
 			hsb.AppendLine("private:");
@@ -261,9 +263,28 @@ namespace ExcelToJson.Properties
 			cppsb.AppendLine("");
 			foreach (var name in SheetNames)
 			{
-				cppsb.AppendLine("const std::vector <" + name + ">& JsonReader::Get" + name + "()const");
+				cppsb.AppendLine("const " + name + "* JsonReader::Get" + name + "Last()const");
+				cppsb.AppendLine("{");
+				cppsb.AppendLine("\treturn &vec" + name + "[static_cast<int>(vec" + name + ".size()-1)];");
+				cppsb.AppendLine("}\n");
+
+				cppsb.AppendLine("const std::vector<" + name + ">& JsonReader::Get" + name + "Vec()const");
 				cppsb.AppendLine("{");
 				cppsb.AppendLine("\treturn vec" + name + ";");
+				cppsb.AppendLine("}\n");
+
+				cppsb.AppendLine("const " + name + "* JsonReader::Get" + name + "(std::function<bool(const "+ name + "&)> fun) const");
+				cppsb.AppendLine("{");
+				cppsb.AppendLine("\tconst " + name + "* p = nullptr;");
+				cppsb.AppendLine("\tfor (auto& it : vec" + name + ")");
+				cppsb.AppendLine("\t{");
+				cppsb.AppendLine("\t\tif (fun(it))");
+				cppsb.AppendLine("\t\t{");
+				cppsb.AppendLine("\t\t\tp = &it;");
+				cppsb.AppendLine("\t\t\tbreak;");
+				cppsb.AppendLine("\t\t}");
+				cppsb.AppendLine("\t}");
+				cppsb.AppendLine("\treturn p;");
 				cppsb.AppendLine("}\n");
 			}
 			foreach (var name in SheetNames)
@@ -833,30 +854,28 @@ namespace ExcelToJson.Properties
 			sb.AppendLine("\treturn true;");
 			sb.AppendLine("}\n");
 			sb.AppendLine("bool " + skillName + "::Init(int level)");
-			sb.AppendLine("{\n");
-			sb.AppendLine("\tauto confVec = g_pJsonReader->Get" + skillName + "Conf();\n");
-			sb.AppendLine("\tfor (auto it : confVec)");
-			sb.AppendLine("\t{");
-			sb.AppendLine("\t\tif (it.Level == (level <= 0 ? 1 : level))");
-			sb.AppendLine("\t\t{");
+			sb.AppendLine("{");
+			sb.AppendLine("\tint findLevel = level;\n\tif (level <= 0)\n\t{\n\t\tfindLevel = 1;\n\t}");
+			sb.AppendLine("\tauto confVec = g_pJsonReader->Get" + skillName + "Conf(");
+			sb.AppendLine("\t\t[&](const "+ skillName + "Conf& it){return it.Level == findLevel;});\n");
+			sb.AppendLine("\tif (confVec != nullptr)\n\t{");
 			foreach (var field in fieldAndType)
 			{
 
-				sb.AppendLine("\t\t\tSet" + field.Key + "(it." + field.Key + ");");
+				sb.AppendLine("\t\tSet" + field.Key + "(confVec->" + field.Key + ");");
 
 			}
 			foreach (var item in repeatfieldType)
 			{
 				if (item.Key == "Level")
 				{
-					sb.AppendLine("\t\t\tSet" + item.Key + "(level); ");
+					sb.AppendLine("\t\tSet" + item.Key + "(level); ");
 				}
 				else
-					sb.AppendLine("\t\t\tSet" + item.Key + "(it." + item.Key+");");
+					sb.AppendLine("\t\tSet" + item.Key + "(confVec->" + item.Key+");");
 			}
 
-			sb.AppendLine("\t\t\treturn true;");
-			sb.AppendLine("\t\t}");
+			sb.AppendLine("\t\treturn true;");
 			sb.AppendLine("\t}");
 			sb.AppendLine("\treturn false;");
 			sb.AppendLine("}\n");
